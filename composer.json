@@ -1,0 +1,39 @@
+{
+    "name": "deitsolutions/bigcommerce-api-php",
+    "type": "library",
+    "description": "Enables PHP applications to communicate with the Bigcommerce v3 API.",
+    "keywords": [
+        "api",
+        "http",
+        "rest",
+        "ecommerce",
+        "business"
+    ],
+    "homepage": "http://developer.bigcommerce.com",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Bigcommerce",
+            "homepage": "http://www.bigcommerce.com"
+        }
+    ],
+    "require": {
+        "php": ">=7.0"
+    },
+    "require-dev": {
+        "vlucas/phpdotenv": "1.0.6",
+        "behat/behat": "2.4.*@stable",
+        "guzzle/guzzle": ">=3.7.0,<=3.9.9",
+        "bigcommerce/api": "*"
+    },
+    "autoload": {
+        "psr-0": {
+            "Bigcommerce": "src/"
+        }
+    },
+    "archive": {
+        "exclude": [
+            "bin"
+        ]
+    }
+}
