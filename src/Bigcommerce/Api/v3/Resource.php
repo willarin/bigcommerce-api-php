@@ -160,7 +160,18 @@ class Resource
     public function all($filter = [])
     {
         $filter = Filter::create($filter);
-        return Client::getCollection(self::getUrl() . $filter->toQuery(), self::getResourceName());
+        $result = Client::getCollection(self::getUrl() . $filter->toQuery(), self::getResourceName());
+        return $result;
+    }
+    
+    /**
+     * API client connection headers
+     *
+     * @return array
+     */
+    public function getClientConnectionHeaders()
+    {
+        return Client::getConnection()->getHeaders();
     }
     
     /**

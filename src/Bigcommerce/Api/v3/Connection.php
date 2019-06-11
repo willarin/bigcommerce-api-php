@@ -2,6 +2,8 @@
 
 namespace Bigcommerce\Api\v3;
 
+use yii\db\Exception;
+
 /**
  * HTTP connection.
  */

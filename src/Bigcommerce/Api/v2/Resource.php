@@ -167,6 +167,16 @@ class Resource extends \Bigcommerce\Api\Resource
     }
     
     /**
+     * API client connection headers
+     *
+     * @return array
+     */
+    public function getClientConnectionHeaders()
+    {
+        return Client::getConnection()->getHeaders();
+    }
+    
+    /**
      * @param bool $plural
      * @return string
      * @throws \ReflectionException
