@@ -1,5 +1,5 @@
 {
-    "name": "deitsolutions/bigcommerce-api-php",
+    "name": "solutlux/bigcommerce-api-php",
     "type": "library",
     "description": "Enables PHP applications to communicate with the Bigcommerce v3 API.",
     "keywords": [
