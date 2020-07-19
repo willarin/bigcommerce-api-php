@@ -12,9 +12,13 @@ class ProductModifier extends Resource
 {
     /**
      * {@inheritdoc}
-     * @var string
      */
     public $url = '/catalog/products/{id}/modifiers';
+    
+    /**
+     * {@inheritdoc}
+     */
+    public $parentField = 'product_id';
     
     protected $ignoreOnCreate = array(
         'id',

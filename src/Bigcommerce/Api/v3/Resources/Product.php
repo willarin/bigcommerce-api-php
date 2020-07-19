@@ -49,4 +49,14 @@ class Product extends Resource
     protected $ignoreIfZero = array(
         'tax_class_id',
     );
+    
+    /**
+     * retrieve current product options
+     * @return mixed array|string mapped collection or XML string if useXml is true
+     */
+    public function options()
+    {
+        return Client::getCollection($this->url . '/' . $this->id . '/options', 'ProductVariantOption');
+    }
+    
 }

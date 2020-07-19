@@ -4,6 +4,8 @@ namespace Bigcommerce\Api\v3;
 
 use \Exception as Exception;
 use Firebase\JWT\JWT;
+use Bigcommerce\Api\Connection;
+use Bigcommerce\Api\v3\Resource;
 
 /**
  * Bigcommerce API Client.
@@ -269,10 +271,18 @@ class Client
         if ($object == false || is_string($object)) {
             return $object;
         }
-        
-        $baseResource = __NAMESPACE__ . '\\' . $resource;
-        $class = (class_exists($baseResource)) ? $baseResource : 'Bigcommerce\\Api\\v3\\Resources\\' . $resource;
-        return new $class($object->data);
+    
+        $baseResource = '\\' . __NAMESPACE__ . '\\' . $resource;
+        $v3Resource = '\\Bigcommerce\\Api\\v3\\Resources\\' . $resource;
+        $class = (class_exists($baseResource)) ? $baseResource : ((class_exists($v3Resource)) ? $v3Resource : false);
+    
+        if ($class) {
+            $result = new $class($object->data);
+        } else {
+            $result = Resource($object->data);
+        }
+    
+        return $result;
     }
     
     /**
@@ -440,9 +450,16 @@ class Client
         }
         
         $baseResource = __NAMESPACE__ . '\\' . $resource;
-        self::$resource = (class_exists($baseResource)) ? $baseResource : 'Bigcommerce\\Api\\v3\\Resources\\' . $resource;
-        
-        return array_map(array('self', 'mapCollectionObject'), $object->data);
+        $v3Resource = '\\Bigcommerce\\Api\\v3\\Resources\\' . $resource;
+        self::$resource = (class_exists($baseResource)) ? $baseResource : ((class_exists($v3Resource)) ? $v3Resource : false);
+    
+        if ((self::$resource) and (is_array($object->data))) {
+            $result = array_map(array('self', 'mapCollectionObject'), $object->data);
+        } else {
+            $result = [];
+        }
+    
+        return $result;
     }
     
     /**
@@ -451,7 +468,7 @@ class Client
      * @param \stdClass $object
      * @return Resource
      */
-    private static function mapCollectionObject($object)
+    public static function mapCollectionObject($object)
     {
         $class = self::$resource;
         
@@ -471,6 +488,24 @@ class Client
         }
         
         return $object->meta->pagination->total;
+    }
+    
+    /**
+     * Callback for mapping collection objects resource classes.
+     *
+     * @param string $resource
+     * @return mixed Resource or false value
+     */
+    public static function getResourceObject($resource)
+    {
+        $resourceClass = '\\Bigcommerce\\Api\\v3\\Resources\\' . $resource;
+        if (class_exists($resourceClass)) {
+            $result = new $resourceClass();
+        } else {
+            $result = false;
+        }
+        
+        return $result;
     }
 
 //    /**
