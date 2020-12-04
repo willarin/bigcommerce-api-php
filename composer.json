@@ -1,7 +1,7 @@
 {
-    "name": "solutlux/bigcommerce-api-php",
+    "name": "almeyda/bigcommerce-api-php",
     "type": "library",
-    "description": "Enables PHP applications to communicate with the Bigcommerce v3 API.",
+    "description": "Enables PHP applications to communicate with the Bigcommerce v2/v3 API.",
     "keywords": [
         "api",
         "http",
