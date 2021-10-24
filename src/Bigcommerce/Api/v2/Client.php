@@ -7,8 +7,15 @@ use Bigcommerce\Api\Filter;
 /**
  * Bigcommerce API Client.
  */
-class Client extends \Bigcommerce\Api\Client
+class Client extends \Bigcommerce\Api\BasicClient
 {
+    /**
+     * Resource path
+     *
+     * @var string
+     */
+    protected static $resource_path = '\\Bigcommerce\\Api\\v2\\';
+    
     /**
      * check if method exists
      *
@@ -30,6 +37,18 @@ class Client extends \Bigcommerce\Api\Client
     {
         $filter = Filter::create($filter);
         return self::getCount('/customer_groups/count' . $filter->toQuery());
+    }
+    
+    /**
+     * Get list of customer groups with filter
+     *
+     * @param array $filter
+     * @return mixed
+     */
+    public static function getCustomerGroupsByFilter($filter = array())
+    {
+        $filter = Filter::create($filter);
+        return static::getCollection('/customer_groups' . $filter->toQuery());
     }
     
     /**

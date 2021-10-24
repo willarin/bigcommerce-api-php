@@ -18,131 +18,27 @@ class Client
      * @var string
      */
     public static $api_path;
+    
     /**
-     * Full Store URL to connect to
+     * Resource path
      *
      * @var string
      */
-    private static $store_url;
+    protected static $resource_path = '\\Bigcommerce\\Api\\v3\\';
+    
     /**
-     * Username to connect to the store API with
+     * {@inheritdoc}
+     */
+    protected static $path_prefix = '/api/v3';
+    
+    /**
+     * prefix for stores in url request
      *
      * @var string
      */
-    private static $username;
-    /**
-     * API key
-     *
-     * @var string
-     */
-    private static $api_key;
-    /**
-     * Connection instance
-     *
-     * @var Connection
-     */
-    private static $connection;
-    /**
-     * Resource class name
-     *
-     * @var string
-     */
-    private static $resource;
-    /**
-     * API path prefix to be added to store URL for requests
-     *
-     * @var string
-     */
-    private static $path_prefix = '/api/v3';
-    private static $client_id;
-    private static $store_hash;
-    private static $auth_token;
-    private static $client_secret;
-    private static $stores_prefix = '/stores/%s/v3';
-    private static $api_url = 'https://api.bigcommerce.com';
+    protected static $stores_prefix = '/stores/%s/v3';
+    
     private static $login_url = 'https://login.bigcommerce.com';
-    
-    /**
-     * Configure the API client with the required settings to access
-     * the API for a store.
-     *
-     * Accepts OAuth and (for now!) Basic Auth credentials
-     *
-     * @param array $settings
-     */
-    public static function configure($settings)
-    {
-        if (isset($settings['client_id'])) {
-            self::configureOAuth($settings);
-        } else {
-            self::configureBasicAuth($settings);
-        }
-    }
-    
-    /**
-     * Configure the API client with the required OAuth credentials.
-     *
-     * Requires a settings array to be passed in with the following keys:
-     *
-     * - client_id
-     * - auth_token
-     * - store_hash
-     *
-     * @param array $settings
-     * @throws \Exception
-     */
-    public static function configureOAuth($settings)
-    {
-        if (!isset($settings['auth_token'])) {
-            throw new Exception("'auth_token' must be provided");
-        }
-        
-        if (!isset($settings['store_hash'])) {
-            throw new Exception("'store_hash' must be provided");
-        }
-        
-        self::$client_id = $settings['client_id'];
-        self::$auth_token = $settings['auth_token'];
-        self::$store_hash = $settings['store_hash'];
-        
-        self::$client_secret = isset($settings['client_secret']) ? $settings['client_secret'] : null;
-        
-        self::$api_path = self::$api_url . sprintf(self::$stores_prefix, self::$store_hash);
-        self::$connection = false;
-    }
-    
-    /**
-     * Configure the API client with the required credentials.
-     *
-     * Requires a settings array to be passed in with the following keys:
-     *
-     * - store_url
-     * - username
-     * - api_key
-     *
-     * @param array $settings
-     * @throws \Exception
-     */
-    public static function configureBasicAuth(array $settings)
-    {
-        if (!isset($settings['store_url'])) {
-            throw new Exception("'store_url' must be provided");
-        }
-        
-        if (!isset($settings['username'])) {
-            throw new Exception("'username' must be provided");
-        }
-        
-        if (!isset($settings['api_key'])) {
-            throw new Exception("'api_key' must be provided");
-        }
-        
-        self::$username = $settings['username'];
-        self::$api_key = $settings['api_key'];
-        self::$store_url = rtrim($settings['store_url'], '/');
-        self::$api_path = self::$store_url . self::$path_prefix;
-        self::$connection = false;
-    }
     
     /**
      * Configure the API client to throw exceptions when HTTP errors occur.
@@ -154,26 +50,6 @@ class Client
     public static function failOnError($option = true)
     {
         self::connection()->failOnError($option);
-    }
-    
-    /**
-     * Get an instance of the HTTP connection object. Initializes
-     * the connection if it is not already active.
-     *
-     * @return Connection
-     */
-    private static function connection()
-    {
-        if (!self::$connection) {
-            self::$connection = new Connection();
-            if (self::$client_id) {
-                self::$connection->authenticateOauth(self::$client_id, self::$auth_token);
-            } else {
-                self::$connection->authenticateBasic(self::$username, self::$api_key);
-            }
-        }
-        
-        return self::$connection;
     }
     
     /**
@@ -246,46 +122,6 @@ class Client
     }
     
     /**
-     * Get a resource entity from the specified endpoint.
-     *
-     * @param string $path api endpoint
-     * @param string $resource resource class to map individual items
-     * @return mixed Resource|string resource object or XML string if useXml is true
-     */
-    public static function getResource($path, $resource = 'Resource')
-    {
-        $response = self::connection()->get(self::$api_path . $path);
-        
-        return self::mapResource($resource, $response);
-    }
-    
-    /**
-     * Map a single object to a resource class.
-     *
-     * @param string $resource name of the resource class
-     * @param \stdClass $object
-     * @return Resource
-     */
-    private static function mapResource($resource, $object)
-    {
-        if ($object == false || is_string($object)) {
-            return $object;
-        }
-    
-        $baseResource = '\\' . __NAMESPACE__ . '\\' . $resource;
-        $v3Resource = '\\Bigcommerce\\Api\\v3\\Resources\\' . $resource;
-        $class = (class_exists($baseResource)) ? $baseResource : ((class_exists($v3Resource)) ? $v3Resource : false);
-    
-        if ($class) {
-            $result = new $class($object->data);
-        } else {
-            $result = Resource($object->data);
-        }
-    
-        return $result;
-    }
-    
-    /**
      * Get a count value from the specified endpoint.
      *
      * @param string $path api endpoint
@@ -316,24 +152,6 @@ class Client
         }
         
         $response = self::connection()->post(self::$api_path . $path, $object);
-        
-        return self::mapResource($resource, $response);
-    }
-    
-    /**
-     * Send a put request to update the specified resource.
-     *
-     * @param string $path api endpoint
-     * @param mixed $object object or XML string to update
-     * @return mixed
-     */
-    public static function updateResource($path, $object, $resource = 'Resource')
-    {
-        if (is_array($object)) {
-            $object = (object)$object;
-        }
-        
-        $response = self::connection()->put(self::$api_path . $path, $object);
         
         return self::mapResource($resource, $response);
     }
@@ -420,59 +238,6 @@ class Client
     public static function getSummary($filter = false)
     {
         return self::getCollection('/catalog/summary', 'Variant');
-    }
-    
-    /**
-     * Get a collection result from the specified endpoint.
-     *
-     * @param string $path api endpoint
-     * @param string $resource resource class to map individual items
-     * @return mixed array|string mapped collection or XML string if useXml is true
-     */
-    public static function getCollection($path, $resource = 'Resource')
-    {
-        $response = self::connection()->get(self::$api_path . $path);
-        
-        return self::mapCollection($resource, $response);
-    }
-    
-    /**
-     * Internal method to wrap items in a collection to resource classes.
-     *
-     * @param string $resource name of the resource class
-     * @param array $object object collection
-     * @return array
-     */
-    private static function mapCollection($resource, $object)
-    {
-        if ($object == false || is_string($object)) {
-            return $object;
-        }
-        
-        $baseResource = __NAMESPACE__ . '\\' . $resource;
-        $v3Resource = '\\Bigcommerce\\Api\\v3\\Resources\\' . $resource;
-        self::$resource = (class_exists($baseResource)) ? $baseResource : ((class_exists($v3Resource)) ? $v3Resource : false);
-    
-        if ((self::$resource) and (is_array($object->data))) {
-            $result = array_map(array('self', 'mapCollectionObject'), $object->data);
-        } else {
-            $result = [];
-        }
-    
-        return $result;
-    }
-    
-    /**
-     * Callback for mapping collection objects resource classes.
-     *
-     * @param \stdClass $object
-     * @return Resource
-     */
-    public static function mapCollectionObject($object)
-    {
-        $class = self::$resource;
-        
-        return new $class($object);
     }
     
     /**
